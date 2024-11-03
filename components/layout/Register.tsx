@@ -12,9 +12,25 @@ import { useEffect, useState } from "react";
 import { AppDispatch, RootState } from "@/store";
 import { registerUser, resetAuth } from "@/store/slices/authSlice";
 
+const isValidInternetDomain = (domain: string): boolean => {
+  const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/;
+  return domainRegex.test(domain);
+};
+
 const formSchema = z
   .object({
-    email: z.string().email({ message: "email tidak valid" }),
+    email: z
+      .string()
+      .email({ message: "email tidak valid" })
+      .refine(
+        (email) => {
+          const domain = email.split("@")[1];
+          return isValidInternetDomain(domain);
+        },
+        {
+          message: "Domain email tidak valid",
+        }
+      ),
     first_name: z.string().min(1, { message: "Nama depan tidak boleh kosong" }),
     last_name: z.string().min(1, { message: "Nama belakang tidak boleh kosong" }),
     password: z.string().min(8, { message: "panjang password minimal 8 karakter" }),
